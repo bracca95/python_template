@@ -1,0 +1,12 @@
+# dir
+.vscode/
+__pycache__/
+
+# specific files
+.DS_Store
+log.log
+processed_json.json
+
+# extensions
+*.txt
+

@@ -1,0 +1,16 @@
+{
+    "sample_bool": true,
+    "sample_path": "config/consts.py",
+    "sample_string": "string",
+    "sample_int": 32,
+    "simple_list": [
+        "elem1",
+        "elem2"
+    ],
+    "object_list": [
+        {
+            "obj_id": 1,
+            "obj_desc": "desc"
+        }
+    ]
+}
