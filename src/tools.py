@@ -5,7 +5,7 @@ import json
 import logging
 # import matplotlib.pyplot as plt
 
-from typing import Type, Any, Optional, List
+from typing import Type, Any, Optional, Union, List
 
 from config.consts import T
 
@@ -64,7 +64,22 @@ class Utils:
         return re.findall(r"[\w']+", s)
 
     @staticmethod
-    def check_sting(s: str, options: List[str], case_sensitive: bool, exact_match: bool) -> bool:
+    def check_string(s: str, options: List[str], case_sensitive: bool, exact_match: bool) -> bool:
+        """Check string match or inclusion
+
+        Given a list of words/sentences, check if a string is either contained or if it has an exact match with one of
+        the elements in the list.
+
+        Args:
+            s (str): the string to evaluate
+            options (List[str]): possibilities
+            case_sensitive (bool): string comparison should be case sensitive
+            exact_match (bool): if False, it means that the string s is contained in one of the option's words
+
+        Returns:
+            True if condition is met, False otherwise
+        """
+        
         if case_sensitive:
             if exact_match:
                 return any(map(lambda x: s == x, options))
@@ -136,8 +151,15 @@ class Utils:
             raise TypeError(f"{val} must be {class_type.__name__}.", arg_json)
 
     @staticmethod
-    def check_bool(val):
+    def check_bool(val: Union[str, bool]) -> bool:
         return val if isinstance(val, bool) else Utils.str2bool(val)
+    
+    @staticmethod
+    def invert_dict(in_dict: dict) -> dict:
+        if not len(list(in_dict.values())) == len(set(in_dict.values())):
+            raise ValueError("The dictionary cannot be inverted as its values are not unique")
+
+        return { v: k for k, v in in_dict.items() }
 
 
 @Singleton
