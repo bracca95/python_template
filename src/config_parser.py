@@ -7,8 +7,8 @@ import json
 from dataclasses import dataclass
 from typing import Optional, Union, List, Any, Callable, Iterable, Type, cast
 
-from src.tools import Utils, Logger
-from config.consts import *
+from .tools import Utils, Logger
+from ..config.consts import *
 
 def from_bool(x: Any) -> bool:
     Utils.check_instance(x, bool)
