@@ -4,11 +4,10 @@ import sys
 import json
 import time
 import logging
-# import matplotlib.pyplot as plt
 
-from typing import Type, Any, Optional, Union, List
+from typing import Type, Any, Union, Optional, List, Set
 
-from ..config.consts import T
+from ...config.consts import T
 
 
 class Singleton:
@@ -54,7 +53,7 @@ class Singleton:
         return isinstance(inst, self._decorated)
 
 
-class Utils:
+class Tools:
 
     @staticmethod
     def str2bool(s: str) -> bool:
@@ -65,32 +64,23 @@ class Utils:
         return re.findall(r"[\w']+", s)
 
     @staticmethod
+    def add_elems_to_set(in_set: Set[Any], *args) -> None:
+        # in place operation
+        for elem in args:
+            in_set.add(elem)
+
+    @staticmethod
     def check_string(s: str, options: List[str], case_sensitive: bool, exact_match: bool) -> bool:
-        """Check string match or inclusion
-
-        Given a list of words/sentences, check if a string is either contained or if it has an exact match with one of
-        the elements in the list.
-
-        Args:
-            s (str): the string to evaluate
-            options (List[str]): possibilities
-            case_sensitive (bool): string comparison should be case sensitive
-            exact_match (bool): if False, it means that the string s is contained in one of the option's words
-
-        Returns:
-            True if condition is met, False otherwise
-        """
-        
         if case_sensitive:
             if exact_match:
-                return any(map(lambda x: s == x, options))
+                return any(map(lambda x: x == s, options))
             else:
-                return any(map(lambda x: s in x, options))
+                return any(map(lambda x: x in s, options))
         else:
             if exact_match:
-                return any(map(lambda x: s.lower() == x.lower(), options))
+                return any(map(lambda x: x.lower() == s.lower(), options))
             else:
-                return any(map(lambda x: s.lower() in x.lower(), options))
+                return any(map(lambda x: x.lower() in s.lower(), options))
 
     @staticmethod
     def validate_path(s: str) -> str:
@@ -117,7 +107,7 @@ class Utils:
         
         json_path = None
         try:
-            json_path = Utils.validate_path(str_path)
+            json_path = Tools.validate_path(str_path)
         except FileNotFoundError as fnf:
             Logger.instance().critical(f"{fnf.args} Quitting...")
             sys.exit(-1)
@@ -130,7 +120,7 @@ class Utils:
             obj = None
             try:
                 obj = json.loads(f.read().replace("\n", ""))
-                Utils.check_instance(obj, dict, error_json=True)
+                Tools.check_instance(obj, dict, error_json=True)
             except TypeError as te:
                 Logger.instance().critical(f"{te.args}")
                 sys.exit(-1)
@@ -153,7 +143,7 @@ class Utils:
 
     @staticmethod
     def check_bool(val: Union[str, bool]) -> bool:
-        return val if isinstance(val, bool) else Utils.str2bool(val)
+        return val if isinstance(val, bool) else Tools.str2bool(val)
     
     @staticmethod
     def invert_dict(in_dict: dict) -> dict:
@@ -183,6 +173,19 @@ class Utils:
         mins, sec = divmod(r, 60)
         
         return f"Elapsed time at {args} is {int(days)}days:{int(hours)}h:{int(mins)}m:{int(sec)}s"
+    
+    @staticmethod
+    def recursive_count(path: str) -> int:
+        if len(os.listdir(path)) < 1:
+            raise FileNotFoundError(f"The directory {path} is empty")
+        
+        count = 0
+        for sub in os.listdir(path):
+            sub_path = os.path.join(path, sub)
+            if os.path.isdir(sub_path):
+                count += len(os.listdir(sub_path))
+
+        return count
 
 
 @Singleton
@@ -190,10 +193,10 @@ class Logger:
 
     def __init__(self, formatter='%(asctime)-2s # %(levelname)-2s # %(message)s'):
         formatter = logging.Formatter(formatter)
-        log_file_dir = os.path.join(os.getcwd(), "output")
-        if not os.path.exists(log_file_dir):
-            os.makedirs(log_file_dir)
-        log_file_path = os.path.join(log_file_dir, "log.log")
+        og_file_dir = os.path.join(os.getcwd(), "output")
+        if not os.path.exists(og_file_dir):
+            os.makedirs(og_file_dir)
+        log_file_path = os.path.join(og_file_dir, "log.log")
 
         # logger basic config
         self.logger = logging.getLogger(__name__)
@@ -230,28 +233,3 @@ class Logger:
 
     def critical(self, msg: str) -> None:
         self.logger.critical(msg)
-
-
-# class Plotter:
-
-#     fignum = 0
-#     colors = ['k', 'b', 'green', 'orange', 'red', 'cyan', 'lime']
-
-#     @staticmethod
-#     def plot(*args, **kwargs):
-#         fig = plt.figure(Plotter.fignum)
-#         fig.set_figwidth(20)
-
-#         for k, v in kwargs.items():
-#             if k == 'fps': fps = v
-
-#         i = 0
-#         for arg, kwarg in zip(args, kwargs.values()):
-#             x_range = np.linspace(0, int(len(arg)/fps), len(arg))
-#             plt.plot(range(len(arg)), arg, color=Plotter.colors[i], label=kwarg)
-#             i += 1
-
-#         plt.legend()
-#         plt.locator_params(axis='x', nbins=int(len(arg)/fps) / 10)
-#         plt.show()
-#         Plotter.fignum += 1

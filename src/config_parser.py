@@ -7,27 +7,27 @@ import json
 from dataclasses import dataclass
 from typing import Optional, Union, List, Any, Callable, Iterable, Type, cast
 
-from .tools import Utils, Logger
+from .tools import Tools, Logger
 from ..config.consts import *
 
 def from_bool(x: Any) -> bool:
-    Utils.check_instance(x, bool)
+    Tools.check_instance(x, bool)
     return x
 
 def from_int(x: Any) -> int:
-    Utils.check_instance(x, int)
+    Tools.check_instance(x, int)
     return x
 
 def from_str(x: Any) -> str:
-    Utils.check_instance(x, str)
+    Tools.check_instance(x, str)
     return x
 
 def from_none(x: Any) -> Any:
-    Utils.check_instance(x, None)
+    Tools.check_instance(x, None)
     return x
 
 def from_list(f: Callable[[Any], T], x: Any) -> List[T]:
-    Utils.check_instance(x, list)
+    Tools.check_instance(x, list)
     return [f(y) for y in x]
 
 def from_union(fs: Iterable[Any], x: Any):
@@ -40,7 +40,7 @@ def from_union(fs: Iterable[Any], x: Any):
 
 
 def to_class(c: Type[T], x: Any) -> dict:
-    Utils.check_instance(x, c)
+    Tools.check_instance(x, c)
     return cast(Any, x).serialize()
 
 
@@ -82,15 +82,15 @@ class Config:
 
     @classmethod
     def deserialize(cls, str_path: str) -> 'Config':
-        obj = Utils.read_json(str_path)
+        obj = Tools.read_json(str_path)
         
         try:
             sample_bool_tmp = from_union([from_str, from_bool, from_none], obj.get(CONFIG_SAMPLE_BOOL))
-            sample_bool = Utils.str2bool(sample_bool_tmp) if isinstance(sample_bool_tmp, str) else sample_bool_tmp
+            sample_bool = Tools.str2bool(sample_bool_tmp) if isinstance(sample_bool_tmp, str) else sample_bool_tmp
 
             sample_path = from_union([from_none, from_str], obj.get(CONFIG_SAMPLE_PATH))
             if sample_path is not None:
-                sample_path = Utils.validate_path(sample_path)
+                sample_path = Tools.validate_path(sample_path)
 
             sample_string = from_union([from_none, from_str], obj.get(CONFIG_SAMPLE_STRING))
             sample_int = from_union([from_none, from_int], obj.get(CONFIG_SAMPLE_INT))
@@ -114,7 +114,7 @@ class Config:
         dire = None
 
         try:
-            dire = Utils.validate_path(directory)
+            dire = Tools.validate_path(directory)
         except FileNotFoundError as fnf:
             Logger.instance().critical(f"{fnf.args}")
             sys.exit(-1)
